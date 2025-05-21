@@ -32,7 +32,13 @@ i.e when distnace comming from sensor is "k" times bigger than the one we
 calculated from theory (triangle theory), then we say that we have edge detection at that angle
 here "k""is our tolerance factor.
 */
-#define tolerance 1.3
+
+#define tolerance_low 1.2  // 20% increse in theoretical value
+#define tolerance_high  1.45 // 45% increse in theoretical value
+
+/*
+i have definded tolerance factors, so that i can ignore some values after first edge detection
+*/
 
 
 
@@ -119,7 +125,7 @@ float get_next_holes_from_laserscan_non_filtered(float angle_degrees, float dist
     //comnvert distnaces from mm to cm and angles fro degrees to radianse for trigonometry formulas
 
     float distance_cm = distance_mm / 10;               // Convert distance in mm to cm  
-    float angle_radianse = angle_degrees * PI / 180;    // Concert angles in degrees to radianse
+    float angle_radianse = (angle_degrees - 270) * PI / 180;    // Concert angles in degrees to radianse, and applying quadrant calculations
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     //                  step: 2 
@@ -129,8 +135,29 @@ float get_next_holes_from_laserscan_non_filtered(float angle_degrees, float dist
 
     float distance_calculated = scan_height / cos(angle_radianse);
 
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //                  step: 3 
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    /*
+    applying edge detection logic, we say we have edge detection 
+    when mesured distnace is 20% bigger and 45% smaller then the one we calculated.
+    */
+
     float distance_to_next_edge = 0.0;
 
+    if(distance_calculated > distance_cm * tolerance_low && distance_calculated < tolerance_high){
+
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //                  step: 4 
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        // when edge is detected, finding the distance to the edge 
+      
+      float distance_to_next_edge = tan(angle_radianse) * scan_height;
+    }
+
+  return distance_to_next_edge;
 }
 
 
