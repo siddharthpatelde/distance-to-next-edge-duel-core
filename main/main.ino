@@ -10,6 +10,17 @@ int new_scan_flag = 0; // defining flag variable to show if it is new scan or no
 float distance = 0;
 float angle = 0;
 
+/*
+defining the lower and upper boundry to filter the incomming data from lidar.
+i.e. if lower bound is 270 and upper bound is 360 than we are only taking angles and 
+distnaces value in range of [270,360]
+*/
+
+#define angle_lower_bound 270
+#define angle_upper_bound 360
+
+
+
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -45,9 +56,9 @@ void loop(){
     angles in mm and a flat value for if its new scan or not
     */ 
 
-    distance = lidar.getCurrentPoint().distance;
-    angle = lidar.getCurrentPoint().angle;
-    new_scan_flag = lidar.getCurrentPoint().startBit;
+    distance = lidar.getCurrentPoint().distance;          // 30 cm minimum
+    angle = lidar.getCurrentPoint().angle;                // 0-360 deg
+    new_scan_flag = lidar.getCurrentPoint().startBit;     // 0 or 1
 
 
 
@@ -61,7 +72,7 @@ void loop(){
     in one scan
     */
 
-    if(distance > 0){
+    if(distance > 0 && angle >= angle_lower_bound && angle <= angle_upper_bound){
 
 
 

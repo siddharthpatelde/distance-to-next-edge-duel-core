@@ -1,3 +1,3 @@
 # distance-to-next-edge-duel-core
 
-This project improves upon my previous edge detection repository by significantly optimizing the algorithm used to calculate the distance to the next edge. Although the earlier implementation provided accurate measurements, it suffered from slow performance. In this version, I have rewritten the code to deliver both speed and precision by fully leveraging the Raspberry Pi Pico’s capabilities — including dual-core processing and additional optimization techniques.
+This project improves upon my previous edge detection repository by significantly optimizing the algorithm used to calculate the distance to the next edge. Although the earlier implementation provided accurate measurements, it suffered from slow performance. In this version, I have rewritten the code to deliver both speed and precision by fully leveraging the Raspberry Pi Pico’s capabilities — including dual-core processing and additional optimization techniques.g
