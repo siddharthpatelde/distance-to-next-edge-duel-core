@@ -19,6 +19,20 @@ distnaces value in range of [270,360]
 #define angle_lower_bound 270
 #define angle_upper_bound 360
 
+/*
+define the constnat height of the lidar, to calculate theoretical
+distance (Hypotenuse from right angle triangle)
+*/
+
+#define scan_height 22
+
+/*
+define the tolerance for edge detecation logic.
+i.e when distnace comming from sensor is "k" times bigger than the one we
+calculated from theory (triangle theory), then we say that we have edge detection at that angle
+here "k""is our tolerance factor.
+*/
+#define tolerance 1.3
 
 
 
@@ -29,15 +43,10 @@ distnaces value in range of [270,360]
 
 
 
-void setup(){
-  //for the PICO to print the stuff in serial monitor
-  Serial.begin(115200);
-
-  
+void setup(){ 
   // bind the RPLIDAR driver to the arduino hardware serial
   Serial1.begin(115200);  // For RPLidar
   lidar.begin(Serial);
-
 
   // set pin modes
   pinMode(RPLIDAR_MOTOR, OUTPUT);
@@ -56,8 +65,8 @@ void loop(){
     angles in mm and a flat value for if its new scan or not
     */ 
 
-    distance = lidar.getCurrentPoint().distance;          // 30 cm minimum
-    angle = lidar.getCurrentPoint().angle;                // 0-360 deg
+    distance = lidar.getCurrentPoint().distance;          // in mm |
+    angle = lidar.getCurrentPoint().angle;                // in Degree
     new_scan_flag = lidar.getCurrentPoint().startBit;     // 0 or 1
 
 
@@ -74,10 +83,10 @@ void loop(){
 
     if(distance > 0 && angle >= angle_lower_bound && angle <= angle_upper_bound){
 
-
+      
 
       if (new_scan_flag) {
-        point_count = 0; //setting the point count again to zero when new scan starts i.e startBit == 1 
+        point_count = 0; //setting the point count again to zero when new scan starts i.e startBit == 1
       }
 
       point_count++;
@@ -102,7 +111,27 @@ void loop(){
 
 }
 
+float get_next_holes_from_laserscan_non_filtered(float angle_degrees, float distance_mm) {
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //                  step: 1 
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+    //comnvert distnaces from mm to cm and angles fro degrees to radianse for trigonometry formulas
+
+    float distance_cm = distance_mm / 10;               // Convert distance in mm to cm  
+    float angle_radianse = angle_degrees * PI / 180;    // Concert angles in degrees to radianse
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //                  step: 2 
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    //compute the desred or theoretical value fo distnace using the hight of the lidar that we set
+
+    float distance_calculated = scan_height / cos(angle_radianse);
+
+    float distance_to_next_edge = 0.0;
+
+}
 
 
 
@@ -113,11 +142,14 @@ void loop(){
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 void setup1(){
-
+ //for the PICO to print the stuff in serial monitor
+  Serial.begin(115200);
 
 }
 
 void loop1(){
+
+
 
 
 }
