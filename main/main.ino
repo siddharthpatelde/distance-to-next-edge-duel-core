@@ -71,7 +71,7 @@ void loop(){
     angles in mm and a flat value for if its new scan or not
     */ 
 
-    distance = lidar.getCurrentPoint().distance;          // in mm |
+    distance = lidar.getCurrentPoint().distance;          // in mm 
     angle = lidar.getCurrentPoint().angle;                // in Degree
     new_scan_flag = lidar.getCurrentPoint().startBit;     // 0 or 1
 
@@ -165,7 +165,7 @@ float get_next_holes_from_laserscan_non_filtered(float angle_degrees, float dist
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//////////////////////////////////////////////////////[   core 0    ]///////////////////////////////////////////////////////// 
+//////////////////////////////////////////////////////[   core 1    ]///////////////////////////////////////////////////////// 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 void setup1(){
