@@ -3,6 +3,7 @@
   -in this test we will find out if the duel core processing in Raspbery pi pico prints global defined angles and distnaces using other serial print statment or not.
   -using voletile variable and noticing the diffrence 
   -if i can accsess the distnace and angle in core 1 (loop1), that proves that i can accsess the global voletile variable in core 1, so now i can perform nice array calculation to find minimum distnace, or filtering extra distnace after the edge detection. 
+  
 */
 
 

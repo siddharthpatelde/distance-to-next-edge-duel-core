@@ -7,8 +7,15 @@ RPLidar lidar;
 
 int point_count = 0; //defining the point count variable to find how many mesurements are there in one scan 
 int new_scan_flag = 0; // defining flag variable to show if it is new scan or not i.e 1 --> new scan start, 0 --> not a new scan
+
 float distance = 0;
 float angle = 0;
+
+
+/* variable to store the distnace from next edge using defined function 
+[ float get_distance_to_next_edge(float angle_degrees, float distance_mm) ] */
+
+float distance_from_edge = 0;
 
 /*
 defining the lower and upper boundry to filter the incomming data from lidar.
@@ -24,7 +31,7 @@ define the constnat height of the lidar, to calculate theoretical
 distance (Hypotenuse from right angle triangle)
 */
 
-#define scan_height 22
+#define scan_height 22 //in cm
 
 /*
 define the tolerance for edge detecation logic.
@@ -41,7 +48,7 @@ i have definded tolerance factors, so that i can ignore some values after first 
 */
 
 
-
+#include <ArduinoJson.h> //to use json string as output
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //////////////////////////////////////////////////////[   core 0    ]///////////////////////////////////////////////////////// 
@@ -50,6 +57,9 @@ i have definded tolerance factors, so that i can ignore some values after first 
 
 
 void setup(){ 
+  //for the PICO to print the stuff in serial monitor
+  Serial.begin(115200);
+
   // bind the RPLIDAR driver to the arduino hardware serial
   Serial1.begin(115200);  // For RPLidar
   lidar.begin(Serial);
@@ -89,7 +99,15 @@ void loop(){
 
     if(distance > 0 && angle >= angle_lower_bound && angle <= angle_upper_bound){
 
-      
+      distance_from_edge = get_distance_to_next_edge(angle,distance);
+
+      JsonDocument doc; 
+
+      doc["scan height"] = scan_height;
+      doc["distnace"] = distance_from_edge;
+
+      serializeJson(doc, Serial);
+      Serial.println(); // Print newline for readability
 
       if (new_scan_flag) {
         point_count = 0; //setting the point count again to zero when new scan starts i.e startBit == 1
@@ -117,7 +135,8 @@ void loop(){
 
 }
 
-float get_next_holes_from_laserscan_non_filtered(float angle_degrees, float distance_mm) {
+float get_distance_to_next_edge(float angle_degrees, float distance_mm) {
+
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     //                  step: 1 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -125,7 +144,7 @@ float get_next_holes_from_laserscan_non_filtered(float angle_degrees, float dist
     //comnvert distnaces from mm to cm and angles fro degrees to radianse for trigonometry formulas
 
     float distance_cm = distance_mm / 10;               // Convert distance in mm to cm  
-    float angle_radianse = (angle_degrees - 270) * PI / 180;    // Concert angles in degrees to radianse, and applying quadrant calculations
+    float angle_radianse = (angle_degrees - angle_lower_bound) * PI / 180;    // Concert angles in degrees to radianse, and applying quadrant calculations
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     //                  step: 2 
@@ -163,20 +182,16 @@ float get_next_holes_from_laserscan_non_filtered(float angle_degrees, float dist
 
 
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //////////////////////////////////////////////////////[   core 1    ]///////////////////////////////////////////////////////// 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 void setup1(){
- //for the PICO to print the stuff in serial monitor
-  Serial.begin(115200);
+
 
 }
 
 void loop1(){
-
-
 
 
 }
