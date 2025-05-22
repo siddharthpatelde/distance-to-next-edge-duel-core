@@ -11,12 +11,6 @@ int new_scan_flag = 0; // defining flag variable to show if it is new scan or no
 float distance = 0;
 float angle = 0;
 
-
-/* variable to store the distnace from next edge using defined function 
-[ float get_distance_to_next_edge(float angle_degrees, float distance_mm) ] */
-
-float distance_from_edge = 0;
-
 /*
 defining the lower and upper boundry to filter the incomming data from lidar.
 i.e. if lower bound is 270 and upper bound is 360 than we are only taking angles and 
@@ -24,7 +18,7 @@ distnaces value in range of [270,360]
 */
 
 #define angle_lower_bound 270
-#define angle_upper_bound 360
+#define angle_upper_bound 355
 
 /*
 define the constnat height of the lidar, to calculate theoretical
@@ -41,7 +35,7 @@ here "k""is our tolerance factor.
 */
 
 #define tolerance_low 1.2  // 20% increse in theoretical value
-#define tolerance_high  1.45 // 45% increse in theoretical value
+#define tolerance_high  1.5 // 50% increse in theoretical value
 
 /*
 i have definded tolerance factors, so that i can ignore some values after first edge detection
@@ -62,7 +56,7 @@ void setup(){
 
   // bind the RPLIDAR driver to the arduino hardware serial
   Serial1.begin(115200);  // For RPLidar
-  lidar.begin(Serial);
+  lidar.begin(Serial1);
 
   // set pin modes
   pinMode(RPLIDAR_MOTOR, OUTPUT);
@@ -97,9 +91,14 @@ void loop(){
     in one scan
     */
 
-    if(distance > 0 && angle >= angle_lower_bound && angle <= angle_upper_bound){
+    if(distance > 0 && angle > angle_lower_bound && angle < angle_upper_bound){
+      
+      /* variable to store the distnace from next edge using defined function 
+      [ float get_distance_to_next_edge(float angle_degrees, float distance_mm) ] */
 
-      distance_from_edge = get_distance_to_next_edge(angle,distance);
+      float distance_from_edge = get_distance_to_next_edge(angle,distance);
+
+      // Serial.println(distance_from_edge); // Print newline for readability
 
       JsonDocument doc; 
 
@@ -128,7 +127,7 @@ void loop(){
     if (IS_OK(lidar.getDeviceInfo(info, 100))) {
        //detected...
        lidar.startScan();
-       analogWrite(RPLIDAR_MOTOR, 150); //150 pwm value of 5.5Hz case
+       analogWrite(RPLIDAR_MOTOR, 180); //150 pwm value of 5.5Hz case
        delay(1000);
     }
   }
@@ -143,8 +142,8 @@ float get_distance_to_next_edge(float angle_degrees, float distance_mm) {
 
     //comnvert distnaces from mm to cm and angles fro degrees to radianse for trigonometry formulas
 
-    float distance_cm = distance_mm / 10;               // Convert distance in mm to cm  
-    float angle_radianse = (angle_degrees - angle_lower_bound) * PI / 180;    // Concert angles in degrees to radianse, and applying quadrant calculations
+    float distance_cm = distance_mm / 10;                 // Convert distance in mm to cm  
+    float angle_radianse = ((angle_degrees - 270) * PI) / 180;    // Concert angles in degrees to radianse, and applying quadrant calculations
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     //                  step: 2 
@@ -163,23 +162,17 @@ float get_distance_to_next_edge(float angle_degrees, float distance_mm) {
     when mesured distnace is 20% bigger and 45% smaller then the one we calculated.
     */
 
-    float distance_to_next_edge = 0.0;
-
-    if(distance_calculated > distance_cm * tolerance_low && distance_calculated < tolerance_high){
+    if(distance_cm > distance_calculated * tolerance_low){
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //                  step: 4 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         // when edge is detected, finding the distance to the edge 
-      
       float distance_to_next_edge = tan(angle_radianse) * scan_height;
+        return distance_to_next_edge; // Print newline for readability
     }
-
-  return distance_to_next_edge;
 }
-
-
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
