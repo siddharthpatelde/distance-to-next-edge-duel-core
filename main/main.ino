@@ -41,7 +41,7 @@ here "k""is our tolerance factor.
 */
 
 #define tolerance_low 1.2  // 20% increse in theoretical value
-#define tolerance_high  1.5 // 50% increse in theoretical value
+
 
 /*
 i have definded tolerance factors, so that i can ignore some values after first edge detection
@@ -52,8 +52,6 @@ i have definded tolerance factors, so that i can ignore some values after first 
 
 JsonDocument doc1; //defining the jason object on top #1 for string that prints distnace
 JsonDocument doc2; //defining the jason object on top #2 for string that prints total number of objects in previus scan and flag status
-
-float real_distnace_array[10];
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //////////////////////////////////////////////////////[   core 0    ]///////////////////////////////////////////////////////// 
@@ -152,19 +150,6 @@ void loop(){
 }
 
 
-float arrMin(float array[]){
-  float min = array[0];
-
-  for (int i = 0; i < sizeof(array)/sizeof(array[0]); i++) {
-    if (min > array[i]) {
-       min = array[i];
-    }
-  }
-  return min;
-}
-
-
-
 float get_distance_to_next_edge(float angle_degrees, float distance_mm) {
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -206,16 +191,16 @@ float get_distance_to_next_edge(float angle_degrees, float distance_mm) {
 }
 
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//////////////////////////////////////////////////////[   core 1    ]///////////////////////////////////////////////////////// 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// //////////////////////////////////////////////////////[   core 1    ]///////////////////////////////////////////////////////// 
+// //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-void setup1(){
+// void setup1(){
 
 
-}
+// }
 
-void loop1(){
+// void loop1(){
 
-}
+// }
 
