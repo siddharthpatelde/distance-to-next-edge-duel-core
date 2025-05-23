@@ -91,7 +91,7 @@ void loop(){
     in one scan
     */
 
-    if(distance > 0 && angle > angle_lower_bound && angle < angle_upper_bound){
+    if(distance > 0 && angle >= angle_lower_bound && angle < angle_upper_bound){
       
       /* variable to store the distnace from next edge using defined function 
       [ float get_distance_to_next_edge(float angle_degrees, float distance_mm) ] */
@@ -185,7 +185,6 @@ void setup1(){
 }
 
 void loop1(){
-
 
 }
 

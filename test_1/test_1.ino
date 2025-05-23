@@ -100,7 +100,9 @@ void loop(){
 
     if(distance > 0 && angle >= angle_lower_bound && angle <= angle_upper_bound){
 
-      
+
+
+
 
       if (new_scan_flag) {
         point_count = 0; //setting the point count again to zero when new scan starts i.e startBit == 1
