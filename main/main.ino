@@ -8,6 +8,12 @@ RPLidar lidar;
 int point_count = 0; //defining the point count variable to find how many mesurements are there in one scan 
 int new_scan_flag = 0; // defining flag variable to show if it is new scan or not i.e 1 --> new scan start, 0 --> not a new scan
 
+/*definig valid distnace cound varibale to store the one number that represents 
+how many valid distnaces we get from "get_distance_to_next_edge" function, so that we can use this number 
+later as a size of array to perform distanec filteretion*/
+
+int valid_distance_count = 0;
+
 float distance = 0;
 float angle = 0;
 
@@ -98,21 +104,28 @@ void loop(){
 
       float distance_from_edge = get_distance_to_next_edge(angle,distance);
 
-      // Serial.println(distance_from_edge); // Print newline for readability
+      if (distance_from_edge != 0) {
 
-      JsonDocument doc; 
+        JsonDocument doc; 
+        doc["scan height: "] = scan_height;
+        doc["distnace: "] = distance_from_edge;
+        doc["live number of mesurements: "] = point_count;
+        doc["total number of vaid distnaces in previus scan: "] = valid_distance_count;
+        doc["start of new scan flag: "] = new_scan_flag;
+        
+        serializeJson(doc, Serial);
+        Serial.println(); // Print newline for readability
 
-      doc["scan height"] = scan_height;
-      doc["distnace"] = distance_from_edge;
+        if (new_scan_flag) {
+          valid_distance_count = point_count; 
+          point_count = 0; //setting the point count again to zero when new scan starts i.e startBit == 1
+        }
 
-      serializeJson(doc, Serial);
-      Serial.println(); // Print newline for readability
-
-      if (new_scan_flag) {
-        point_count = 0; //setting the point count again to zero when new scan starts i.e startBit == 1
+        point_count++;
+    
       }
 
-      point_count++;
+      
     }
     
 
@@ -133,6 +146,20 @@ void loop(){
   }
 
 }
+
+
+float arrMin(float array[]){
+  float min = array[0];
+
+  for (int i = 0; i < sizeof(array)/sizeof(array[0]); i++) {
+    if (min > array[i]) {
+       min = array[i];
+    }
+  }
+  return min;
+}
+
+
 
 float get_distance_to_next_edge(float angle_degrees, float distance_mm) {
 
@@ -173,6 +200,9 @@ float get_distance_to_next_edge(float angle_degrees, float distance_mm) {
         return distance_to_next_edge; // Print newline for readability
     }
 }
+
+
+
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
