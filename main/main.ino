@@ -50,6 +50,9 @@ i have definded tolerance factors, so that i can ignore some values after first 
 
 #include <ArduinoJson.h> //to use json string as output
 
+JsonDocument doc1; //defining the jason object on top
+JsonDocument doc2; //defining the jason object on top
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //////////////////////////////////////////////////////[   core 0    ]///////////////////////////////////////////////////////// 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -80,11 +83,10 @@ void loop(){
     here we take the data from lidar like, distances in cm, 
     angles in mm and a flat value for if its new scan or not
     */ 
-
+    
+    new_scan_flag = lidar.getCurrentPoint().startBit;     // 0 or 1
     distance = lidar.getCurrentPoint().distance;          // in mm 
     angle = lidar.getCurrentPoint().angle;                // in Degree
-    new_scan_flag = lidar.getCurrentPoint().startBit;     // 0 or 1
-
 
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -97,40 +99,36 @@ void loop(){
     in one scan
     */
 
+    if (new_scan_flag) {
+        valid_distance_count = point_count;
+        doc2["new scan flag"] = new_scan_flag;
+        doc2["total distnace count"] = valid_distance_count;
+        point_count = 0; //setting the point count again to zero when new scan starts i.e startBit == 1
+        serializeJson(doc2, Serial);
+        Serial.println(); // Print newline for readability
+    }
+
     if(distance > 0 && angle >= angle_lower_bound && angle < angle_upper_bound){
       
       /* variable to store the distnace from next edge using defined function 
       [ float get_distance_to_next_edge(float angle_degrees, float distance_mm) ] */
 
       float distance_from_edge = get_distance_to_next_edge(angle,distance);
-
+      
       if (distance_from_edge != 0) {
 
-        JsonDocument doc; 
-        doc["scan height: "] = scan_height;
-        doc["distnace: "] = distance_from_edge;
-        doc["live number of mesurements: "] = point_count;
-        doc["total number of vaid distnaces in previus scan: "] = valid_distance_count;
-        doc["start of new scan flag: "] = new_scan_flag;
-        
-        serializeJson(doc, Serial);
+        doc1["distnace: "] = distance_from_edge;
+        doc1["distance id"] = point_count;
+        point_count++;
+
+        serializeJson(doc1, Serial);
         Serial.println(); // Print newline for readability
 
-        if (new_scan_flag) {
-          valid_distance_count = point_count; 
-          point_count = 0; //setting the point count again to zero when new scan starts i.e startBit == 1
-        }
-
-        point_count++;
-    
       }
 
-      
     }
+
     
-
-
-
 
   }else {
     analogWrite(RPLIDAR_MOTOR, 0); //stop the rplidar motor
