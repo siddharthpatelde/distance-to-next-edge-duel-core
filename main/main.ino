@@ -24,7 +24,7 @@ distnaces value in range of [270,360]
 */
 
 #define angle_lower_bound 270
-#define angle_upper_bound 355
+#define angle_upper_bound 360
 
 /*
 define the constnat height of the lidar, to calculate theoretical
@@ -50,8 +50,10 @@ i have definded tolerance factors, so that i can ignore some values after first 
 
 #include <ArduinoJson.h> //to use json string as output
 
-JsonDocument doc1; //defining the jason object on top
-JsonDocument doc2; //defining the jason object on top
+JsonDocument doc1; //defining the jason object on top #1 for string that prints distnace
+JsonDocument doc2; //defining the jason object on top #2 for string that prints total number of objects in previus scan and flag status
+
+float real_distnace_array[10];
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //////////////////////////////////////////////////////[   core 0    ]///////////////////////////////////////////////////////// 
@@ -100,12 +102,14 @@ void loop(){
     */
 
     if (new_scan_flag) {
-        valid_distance_count = point_count;
-        doc2["new scan flag"] = new_scan_flag;
-        doc2["total distnace count"] = valid_distance_count;
-        point_count = 0; //setting the point count again to zero when new scan starts i.e startBit == 1
-        serializeJson(doc2, Serial);
-        Serial.println(); // Print newline for readability
+      valid_distance_count = point_count;
+      point_count = 0; //setting the point count again to zero when new scan starts i.e startBit == 1
+
+      doc2["new scan flag"] = new_scan_flag;
+      doc2["total distnace count"] = valid_distance_count;
+      
+      serializeJson(doc2, Serial);
+      Serial.println(); // Print newline for readability
     }
 
     if(distance > 0 && angle >= angle_lower_bound && angle < angle_upper_bound){
@@ -117,8 +121,11 @@ void loop(){
       
       if (distance_from_edge != 0) {
 
+        if (point_count == 0) {
         doc1["distnace: "] = distance_from_edge;
-        doc1["distance id"] = point_count;
+        }
+
+        //doc1["distance id"] = point_count;
         point_count++;
 
         serializeJson(doc1, Serial);
@@ -129,7 +136,6 @@ void loop(){
     }
 
     
-
   }else {
     analogWrite(RPLIDAR_MOTOR, 0); //stop the rplidar motor
     
@@ -198,9 +204,6 @@ float get_distance_to_next_edge(float angle_degrees, float distance_mm) {
         return distance_to_next_edge; // Print newline for readability
     }
 }
-
-
-
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
