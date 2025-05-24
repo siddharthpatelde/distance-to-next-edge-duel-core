@@ -1,5 +1,4 @@
 /*
-
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ////////////////////////[   distnace to ONE edge using lidar sensor   ]/////////////////////////////
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -20,10 +19,11 @@
   new code:       -optemised logic, for faster output
                   -finding the distnace to ONE edge
                   -sensor covers area coverd by 90* of arc
-                  -code will output only one distnace (distnace to next edge)
+                  -code will output only ONE distnace (distnace to next edge)
 
-
+  current_code:   https://github.com/siddharthpatelde/distance-to-next-edge-optemised
 */
+
 #include <ArduinoJson.h>
 #include <RPLidar.h>
 
