@@ -1,6 +1,6 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-////////////////////////[   distnace to ONE edge using lidar sensor   ]/////////////////////////////
+////////////////////////[   distnace to TWO edges using lidar sensor   ]////////////////////////////
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   Author:Siddharth A. Patel
@@ -17,9 +17,9 @@
                   (main > final_AllLidar_main)
                   
   new code:       -optemised logic, for faster output
-                  -finding the distnace to ONE edge
-                  -sensor covers area coverd by 90* of arc
-                  -code will output only ONE distnace (distnace to next edge)
+                  -finding the distnace to TWO edges (left and right edges)
+                  -therefor now sensor will cover area coverd by 180° of arc
+                  -code will output TWO distnace (distnace to next edge from left edge and right edge)
 
   current_code:   https://github.com/siddharthpatelde/distance-to-next-edge-optemised
 */
@@ -31,31 +31,21 @@ RPLidar lidar;
 
 #define RPLIDAR_MOTOR 3 // The PWM pin for control the speed of RPLIDAR's motor.
 
-int point_count = 0; //defining the point count variable to find how many mesurements are there in one scan 
+int point_count_left = 0;
+int point_count_right = 0;
+
 int new_scan_flag = 0; // defining flag variable to show if it is new scan or not i.e 1 --> new scan start, 0 --> not a new scan
 
 /*definig valid distnace cound varibale to store the one number that represents 
 how many valid distnaces we get from "get_distance_to_next_edge" function, so that we can use this number 
 later as a size of array to perform distanec filteretion*/
 
-int valid_distance_count = 0;
+int valid_distance_count_left = 0;
+int valid_distance_count_right = 0;
 
 float distance = 0;
 float angle = 0;
 
-/*
-defining the lower and upper boundry to filter the incomming data from lidar.
-i.e. if lower bound is 270 and upper bound is 360 than we are only taking angles and 
-distnaces value in range of [270,360]
-*/
-
-#define angle_lower_bound 270
-#define angle_upper_bound 360
-
-/*
-define the constnat height of the lidar, to calculate theoretical
-distance (Hypotenuse from right angle triangle)
-*/
 
 #define scan_height 22 //in cm
 
@@ -126,40 +116,58 @@ void loop(){
     */
 
     if (new_scan_flag) {
-      valid_distance_count = point_count;
-      point_count = 0; //setting the point count again to zero when new scan starts i.e startBit == 1
+      valid_distance_count_left = point_count_left;
+      valid_distance_count_right = point_count_right;
+      
+      point_count_left = 0;
+      point_count_right = 0;
 
       // doc2["new scan flag"] = new_scan_flag;
-      // doc2["total distnace count"] = valid_distance_count;
+      // doc2["left count"] = valid_distance_count_left;
+      // doc2["right count"] = valid_distance_count_right;
       
       // serializeJson(doc2, Serial);
       // Serial.println(); // Print newline for readability
     }
 
-    if(distance > 0 && angle >= angle_lower_bound && angle < angle_upper_bound){
-      
-      /* variable to store the distnace from next edge using defined function 
-      [ float get_distance_to_next_edge(float angle_degrees, float distance_mm) ] */
+      //if(distance > 0 && angle > 90 && angle < 180){
+      if(distance > 0 && angle > 0 && angle < 90){
 
-      float distance_from_edge = get_distance_to_next_edge(angle,distance);
+      float distance_from_edge_right = get_distance_to_next_edge_right(angle,distance);
       
-      if (distance_from_edge != 0) {
+        if (distance_from_edge_right != 0) {
 
-        if (point_count == 0) {
-        doc1["Distnace"] = distance_from_edge;
+          if (point_count_right == valid_distance_count_right) {
+          doc1["distance_right"] = distance_from_edge_right;
+          }
+
+          //doc1["distance id"] = point_count;
+          point_count_right++;
+
+          serializeJson(doc1, Serial);
+          Serial.println(); // Print newline for readability
         }
+      }  
+      
+      if(distance > 0 && angle > 90 && angle < 180){
 
-        //doc1["distance id"] = point_count;
-        point_count++;
+        float distance_from_edge_left = get_distance_to_next_edge_left(angle,distance);
 
-        serializeJson(doc1, Serial);
-        Serial.println(); // Print newline for readability
+        if (distance_from_edge_left != 0) {
 
+          if (point_count_left == 0) {
+          doc1["distance_left"] = distance_from_edge_left;
+          }
+
+          //doc1["distance id"] = point_count;
+          point_count_left++;
+
+          serializeJson(doc1, Serial);
+          Serial.println(); // Print newline for readability
+        }
       }
 
-    }
 
-    
   }else {
     analogWrite(RPLIDAR_MOTOR, 0); //stop the rplidar motor
     
@@ -176,57 +184,39 @@ void loop(){
 }
 
 
-float get_distance_to_next_edge(float angle_degrees, float distance_mm) {
 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    //                  step: 1 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    //comnvert distnaces from mm to cm and angles fro degrees to radianse for trigonometry formulas
+float get_distance_to_next_edge_right(float angle_degrees, float distance_mm) {   //defined a function for left edge [0 ; 90]
 
     float distance_cm = distance_mm / 10;                 // Convert distance in mm to cm  
-    float angle_radianse = ((angle_degrees - 270) * PI) / 180;    // Concert angles in degrees to radianse, and applying quadrant calculations
-
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    //                  step: 2 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    //compute the desred or theoretical value fo distnace using the hight of the lidar that we set
+    float angle_radianse = (-(angle_degrees - 90) * PI) / 180;    // Concert angles in degrees to radianse, and applying quadrant calculations
 
     float distance_calculated = scan_height / cos(angle_radianse);
 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    //                  step: 3 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    /*
-    applying edge detection logic, we say we have edge detection 
-    when mesured distnace is 20% bigger and 45% smaller then the one we calculated.
-    */
 
     if(distance_cm > distance_calculated * tolerance_low){
-
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        //                  step: 4 
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-        // when edge is detected, finding the distance to the edge 
-      float distance_to_next_edge = tan(angle_radianse) * scan_height;
-        return distance_to_next_edge; // Print newline for readability
+      float distance_to_next_edge_right = tan(angle_radianse) * scan_height;
+        return distance_to_next_edge_right; // Print newline for readability
     }
 }
 
 
-// //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// //////////////////////////////////////////////////////[   core 1    ]///////////////////////////////////////////////////////// 
-// //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-// void setup1(){
+float get_distance_to_next_edge_left(float angle_degrees, float distance_mm) {   //defined a function for left edge [90 ; 180]
+
+    float distance_cm = distance_mm / 10;                 // Convert distance in mm to cm  
+    float angle_radianse = ((angle_degrees - 90) * PI) / 180;    // Concert angles in degrees to radianse, and applying quadrant calculations
+
+    float distance_calculated = scan_height / cos(angle_radianse);
 
 
-// }
+    if(distance_cm > distance_calculated * tolerance_low){
+      float distance_to_next_edge_left = tan(angle_radianse) * scan_height;
+        return distance_to_next_edge_left; // Print newline for readability
+    }
+}
 
-// void loop1(){
 
-// }
+
+
+
 
