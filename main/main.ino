@@ -43,6 +43,13 @@ int valid_distance_count = 0;
 float distance = 0;
 float angle = 0;
 
+float cooldown = 0;
+#define MAX_COOLDOWN 10
+
+float[90] scans;
+
+float current_max_distance = 0.0;
+
 /*
 defining the lower and upper boundry to filter the incomming data from lidar.
 i.e. if lower bound is 270 and upper bound is 360 than we are only taking angles and 
@@ -57,7 +64,7 @@ define the constnat height of the lidar, to calculate theoretical
 distance (Hypotenuse from right angle triangle)
 */
 
-#define scan_height 22 //in cm
+#define scan_height 24 //in cm
 
 /*
 define the tolerance for edge detecation logic.
@@ -68,6 +75,7 @@ here "k""is our tolerance factor.
 
 #define tolerance_low 1.2  // 20% increse in theoretical value
 
+#define MAX_HOLE_DISTANCE 40
 
 /*
 i have definded tolerance factors, so that i can ignore some values after first edge detection
@@ -125,37 +133,69 @@ void loop(){
     in one scan
     */
 
-    if (new_scan_flag) {
+    if (angle < 1.2 && cooldown <= 0) {
       valid_distance_count = point_count;
       point_count = 0; //setting the point count again to zero when new scan starts i.e startBit == 1
+
+      doc1["distance"] = current_max_distance;
+
+      serializeJson(doc1, Serial);
+      Serial.println(); // Print newline for readability
+
+      current_max_distance = -1.0f;
+
+      cooldown = MAX_COOLDOWN;
 
       // doc2["new scan flag"] = new_scan_flag;
       // doc2["total distnace count"] = valid_distance_count;
       
       // serializeJson(doc2, Serial);
       // Serial.println(); // Print newline for readability
+
     }
+
+    cooldown--;
+
+    Serial.print(angle);
+    Serial.print(" ");
+    Serial.println(distance);
 
     if(distance > 0 && angle >= angle_lower_bound && angle < angle_upper_bound){
       
+      int index =
+
       /* variable to store the distnace from next edge using defined function 
       [ float get_distance_to_next_edge(float angle_degrees, float distance_mm) ] */
 
       float distance_from_edge = get_distance_to_next_edge(angle,distance);
-      
-      if (distance_from_edge != 0) {
 
-        if (point_count == 0) {
-        doc1["Distnace"] = distance_from_edge;
-        }
+      Serial.println(distance_from_edge);
 
-        //doc1["distance id"] = point_count;
-        point_count++;
-
-        serializeJson(doc1, Serial);
-        Serial.println(); // Print newline for readability
-
+      if ( distance_from_edge < 0) {
+        return;
       }
+
+      if ( current_max_distance >= 0 && distance_from_edge > current_max_distance + MAX_HOLE_DISTANCE ) {
+        return;
+      }
+
+      if ( distance_from_edge > current_max_distance ) {
+        current_max_distance = distance_from_edge;
+      }
+      
+      // if (distance_from_edge != 0) {
+
+      //   if (point_count == 0) {
+      //   doc1["Distnace"] = distance_from_edge;
+      //   }
+
+      //   //doc1["distance id"] = point_count;
+      //   point_count++;
+
+      //   serializeJson(doc1, Serial);
+      //   Serial.println(); // Print newline for readability
+
+      // }
 
     }
 
@@ -168,7 +208,7 @@ void loop(){
     if (IS_OK(lidar.getDeviceInfo(info, 100))) {
        //detected...
        lidar.startScan();
-       analogWrite(RPLIDAR_MOTOR, 180); //150 pwm value of 5.5Hz case
+       analogWrite(RPLIDAR_MOTOR, 255); //150 pwm value of 5.5Hz case
        delay(1000);
     }
   }
@@ -195,6 +235,8 @@ float get_distance_to_next_edge(float angle_degrees, float distance_mm) {
 
     float distance_calculated = scan_height / cos(angle_radianse);
 
+    // Serial.println(distance_calculated);
+
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     //                  step: 3 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -204,16 +246,20 @@ float get_distance_to_next_edge(float angle_degrees, float distance_mm) {
     when mesured distnace is 20% bigger and 45% smaller then the one we calculated.
     */
 
-    if(distance_cm > distance_calculated * tolerance_low){
+    if(distance_cm > distance_calculated * tolerance_low || distance_cm < distance_calculated * 0.8){
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //                  step: 4 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         // when edge is detected, finding the distance to the edge 
-      float distance_to_next_edge = tan(angle_radianse) * scan_height;
-        return distance_to_next_edge; // Print newline for readability
+     
+      return -1.0; // Print newline for readability
     }
+
+    float distance_to_next_edge = tan(angle_radianse) * scan_height;
+
+    return distance_to_next_edge;
 }
 
 
