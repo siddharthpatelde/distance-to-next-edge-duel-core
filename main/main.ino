@@ -129,11 +129,11 @@ void loop(){
       valid_distance_count = point_count;
       point_count = 0; //setting the point count again to zero when new scan starts i.e startBit == 1
 
-      doc2["new scan flag"] = new_scan_flag;
-      doc2["total distnace count"] = valid_distance_count;
+      // doc2["new scan flag"] = new_scan_flag;
+      // doc2["total distnace count"] = valid_distance_count;
       
-      serializeJson(doc2, Serial);
-      Serial.println(); // Print newline for readability
+      // serializeJson(doc2, Serial);
+      // Serial.println(); // Print newline for readability
     }
 
     if(distance > 0 && angle >= angle_lower_bound && angle < angle_upper_bound){
@@ -146,7 +146,7 @@ void loop(){
       if (distance_from_edge != 0) {
 
         if (point_count == 0) {
-        doc1["distnace: "] = distance_from_edge;
+        doc1["Distnace"] = distance_from_edge;
         }
 
         //doc1["distance id"] = point_count;

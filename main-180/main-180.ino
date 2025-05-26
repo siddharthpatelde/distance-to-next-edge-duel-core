@@ -31,35 +31,21 @@ RPLidar lidar;
 
 #define RPLIDAR_MOTOR 3 // The PWM pin for control the speed of RPLIDAR's motor.
 
-int point_count = 0; //defining the point count variable to find how many mesurements are there in one scan 
 int point_count_left = 0;
 int point_count_right = 0;
+
 int new_scan_flag = 0; // defining flag variable to show if it is new scan or not i.e 1 --> new scan start, 0 --> not a new scan
 
 /*definig valid distnace cound varibale to store the one number that represents 
 how many valid distnaces we get from "get_distance_to_next_edge" function, so that we can use this number 
 later as a size of array to perform distanec filteretion*/
 
-int valid_distance_count = 0;
 int valid_distance_count_left = 0;
 int valid_distance_count_right = 0;
 
 float distance = 0;
 float angle = 0;
 
-/*
-defining the lower and upper boundry to filter the incomming data from lidar.
-i.e. if lower bound is 270 and upper bound is 360 than we are only taking angles and 
-distnaces value in range of [270,360]
-*/
-
-#define angle_lower_bound 270
-#define angle_upper_bound 360
-
-/*
-define the constnat height of the lidar, to calculate theoretical
-distance (Hypotenuse from right angle triangle)
-*/
 
 #define scan_height 22 //in cm
 
@@ -197,46 +183,6 @@ void loop(){
 
 }
 
-
-float get_distance_to_next_edge(float angle_degrees, float distance_mm) {
-
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    //                  step: 1 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    //comnvert distnaces from mm to cm and angles fro degrees to radianse for trigonometry formulas
-
-    float distance_cm = distance_mm / 10;                 // Convert distance in mm to cm  
-    float angle_radianse = ((angle_degrees - 270) * PI) / 180;    // Concert angles in degrees to radianse, and applying quadrant calculations
-
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    //                  step: 2 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    //compute the desred or theoretical value fo distnace using the hight of the lidar that we set
-
-    float distance_calculated = scan_height / cos(angle_radianse);
-
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    //                  step: 3 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    /*
-    applying edge detection logic, we say we have edge detection 
-    when mesured distnace is 20% bigger and 45% smaller then the one we calculated.
-    */
-
-    if(distance_cm > distance_calculated * tolerance_low){
-
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        //                  step: 4 
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-        // when edge is detected, finding the distance to the edge 
-      float distance_to_next_edge = tan(angle_radianse) * scan_height;
-        return distance_to_next_edge; // Print newline for readability
-    }
-}
 
 
 float get_distance_to_next_edge_right(float angle_degrees, float distance_mm) {   //defined a function for left edge [0 ; 90]
